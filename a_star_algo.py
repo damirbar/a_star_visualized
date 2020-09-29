@@ -27,6 +27,9 @@ class AStarNode:
     def __eq__(self, other):
         return self.position == other.position
 
+    def __lt__(self, other):
+        return self.f < other.f
+
     @property
     def position(self):
         return self.__position
@@ -67,6 +70,12 @@ class AStarNode:
     def f(self, f):
         self.__f = f
 
+    def __str(self):
+        return "Node: " + str(self.position)
+
+    def __repr__(self):
+        return "Node: " + str(self.position)
+
 
 def a_star_search(matrix, start, end):
 
@@ -81,14 +90,21 @@ def a_star_search(matrix, start, end):
     # Add the start node
     open_node_list.append(start_node)
 
+    iteration = 0
     # Go on until the open node list is empty
     while len(open_node_list) > 0:
-
         # Sort the open node list to get the cheapest node
         open_node_list.sort()
 
         curr_node = open_node_list.pop(0)
         closed.append(curr_node)
+
+        if iteration % 100 == 0:
+            print(f"iteration {iteration}")
+            print(f"open size = {len(open_node_list)}")
+            print(f"closed size = {len(closed)}")
+            print(f"curr node = {curr_node}")
+        iteration += 1
 
         # Found the end node
         if curr_node == end_node:
@@ -138,6 +154,13 @@ def add_to_open_list(open_node_list, neighbor_node):
 
 
 def main():
+
+    width  = 800
+    height = 600
+    matrix = [[0 for x in range(width)] for y in range(height)]
+
+    print(a_star_search(matrix, Position(6,6), Position(20,20)))
+
     return
 
 if __name__ == '__main__':
