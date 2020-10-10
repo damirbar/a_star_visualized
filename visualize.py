@@ -4,7 +4,14 @@ SCREEN_HEIGHT = 600
 SCREEN_WIDTH  = 800
 BLOCK_SIZE    = 10
 
-# class AStarConstants:
+# Colors
+class Colors:
+    red        = (255,0,0)
+    green      = (0,255,0)
+    dark_green = (0,200,0)
+    blue       = (0,0,255)
+    white      = (255,255,255)
+    black      = (0,0,0)
 
 class Position:
 
@@ -48,5 +55,12 @@ class Visualizer:
                 if matrix[i][j]:
                     self.handle_pixel(matrix[i][j])
         self.clock.tick(self.clock_speed)
+
+    def draw_grid(self):
+        for x in range(SCREEN_WIDTH):
+            for y in range(SCREEN_HEIGHT):
+                rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
+                                   BLOCK_SIZE, BLOCK_SIZE)
+                pygame.draw.rect(self.disp, Colors.white, rect, 1)
 
 

@@ -1,3 +1,5 @@
+import enum
+
 from visualize import Visualizer, Position
 
 
@@ -19,10 +21,12 @@ class AStarNode:
         __f (int): Total cost
 
     """
+
     def __init__(self, pos, parent=None):
         self.__position = pos
         self.__parent = parent
         self.__g = self.__h = self.__f = 0
+        self.__is_traversable = True
 
     def __eq__(self, other):
         return self.position == other.position
@@ -50,6 +54,10 @@ class AStarNode:
     def f(self):
         return self.__f
 
+    @property
+    def is_traversable(self):
+        return self.__is_traversable
+
     @position.setter
     def position(self, position):
         self.__position = position
@@ -70,6 +78,10 @@ class AStarNode:
     def f(self, f):
         self.__f = f
 
+    @is_traversable.setter
+    def is_traversable(self, val):
+        self.__is_traversable = val
+
     def __str(self):
         return "Node: " + str(self.position)
 
@@ -77,67 +89,146 @@ class AStarNode:
         return "Node: " + str(self.position)
 
 
-def a_star_search(matrix, start, end):
+class NodeColor(enum.Enum):
+    white = 0
+    green = 1
+    red = 2
 
-    # Create lists for open and closed nodes
-    open_node_list   = []
-    closed = []
 
-    # Create a start and an end node
-    start_node = AStarNode(start, None)
-    end_node = AStarNode(end, None)
+class VisualizedAStarNode(AStarNode):
 
-    # Add the start node
-    open_node_list.append(start_node)
+    def __init__(self, pos, parent):
+        AStarNode.__init__(self, pos, parent)
+        self.__color = NodeColor.white
 
-    iteration = 0
-    # Go on until the open node list is empty
-    while len(open_node_list) > 0:
-        # Sort the open node list to get the cheapest node
-        open_node_list.sort()
+    @property
+    def color(self):
+        return self.__color
 
-        curr_node = open_node_list.pop(0)
-        closed.append(curr_node)
+    @color.setter
+    def color(self, color):
+        self.__color = color
 
-        if iteration % 100 == 0:
-            print(f"iteration {iteration}")
-            print(f"open size = {len(open_node_list)}")
-            print(f"closed size = {len(closed)}")
-            print(f"curr node = {curr_node}")
-        iteration += 1
 
-        # Found the end node
-        if curr_node == end_node:
-            path = []
-            while curr_node != start_node:
-                path.append(curr_node.position)
-                curr_node = curr_node.parent
+class AStarSearch:
 
-            return path[::-1]
+    def __init__(self, node_matrix, start, end, visualizer=None):
+        self.node_matrix = node_matrix
+        self.visualizer = visualizer
+        self.done = False
 
-        x,y = curr_node.position.x, curr_node.position.y
+        # Create lists for open and closed nodes
+        self.open_node_list = []
+        self.closed = []
 
-        neighbors = [Position(x-1, y), Position(x+1, y), Position(x, y-1), Position(x, y+1)]
+        # Create a start and an end node
+        self.start_node = self.generate_node(start)
+        self.end_node = self.generate_node(end)
 
-        for position in neighbors:
-            if x < 0 or y < 0 or x > len(matrix) or y > len(matrix[0]):
-                continue
+        # Add the start node
+        self.open_node_list.append(self.start_node)
 
-            neighbor = AStarNode(position, curr_node)
-            if neighbor in closed:
-                continue
+        self.result_path = None
 
-            neighbor.g = abs(neighbor.position.x - start_node.position.x) + \
-                          abs(neighbor.position.y - start_node.position.y)
-            neighbor.h = abs(neighbor.position.x - end_node.position.x) + \
-                          abs(neighbor.position.y - end_node.position.y)
-            neighbor.f = neighbor.g + neighbor.f
+    def step_a_star_search(self):
+        if self.done:
+            return
 
-            if add_to_open_list(open_node_list, neighbor):
-                open_node_list.append(neighbor)
+        if len(self.open_node_list) > 0:
+            # Sort the open node list to get the cheapest node
+            self.open_node_list.sort()
 
-    # No path was found
-    return None
+            curr_node = self.open_node_list.pop(0)
+            self.closed.append(curr_node)
+
+            # Found the end node
+            if curr_node == self.end_node:
+                path = []
+                while curr_node != self.start_node:
+                    path.append(curr_node.position)
+                    curr_node = curr_node.parent
+                self.done = True
+                self.result_path = path[::-1]
+                return
+
+            x, y = curr_node.position.x, curr_node.position.y
+
+            neighbors = [Position(x-1, y), Position(x+1, y),
+                         Position(x, y-1), Position(x, y+1)]
+
+            for position in neighbors:
+                if x < 0 or y < 0 or x > len(self.node_matrix) or y > len(self.node_matrix[0]):
+                    continue
+
+                neighbor = self.generate_node(position, curr_node)
+                if neighbor in self.closed or not neighbor.is_traversable:
+                    continue
+
+                neighbor.g = abs(neighbor.position.x - self.start_node.position.x) + \
+                    abs(neighbor.position.y - self.start_node.position.y)
+                neighbor.h = abs(neighbor.position.x - self.end_node.position.x) + \
+                    abs(neighbor.position.y - self.end_node.position.y)
+                neighbor.f = neighbor.g + neighbor.f
+
+                if add_to_open_list(self.open_node_list, neighbor):
+                    self.open_node_list.append(neighbor)
+
+    def perform_a_star_search(self):
+
+        iteration = 0
+        # Go on until the open node list is empty
+        while len(self.open_node_list) > 0:
+            # Sort the open node list to get the cheapest node
+            self.open_node_list.sort()
+
+            curr_node = self.open_node_list.pop(0)
+            self.closed.append(curr_node)
+
+            if iteration % 100 == 0:
+                print(f"iteration {iteration}")
+                print(f"open size = {len(open_node_list)}")
+                print(f"closed size = {len(closed)}")
+                print(f"curr node = {curr_node}")
+            iteration += 1
+
+            # Found the end node
+            if curr_node == self.end_node:
+                path = []
+                while curr_node != self.start_node:
+                    path.append(curr_node.position)
+                    curr_node = curr_node.parent
+
+                return path[::-1]
+
+            x, y = curr_node.position.x, curr_node.position.y
+
+            neighbors = [Position(x-1, y), Position(x+1, y),
+                         Position(x, y-1), Position(x, y+1)]
+
+            for position in neighbors:
+                if x < 0 or y < 0 or x > len(self.node_matrix) or y > len(self.node_matrix[0]):
+                    continue
+
+                neighbor = self.generate_node(position, curr_node)
+                if neighbor in self.closed or not neighbor.is_traversable:
+                    continue
+
+                neighbor.g = abs(neighbor.position.x - self.start_node.position.x) + \
+                    abs(neighbor.position.y - self.start_node.position.y)
+                neighbor.h = abs(neighbor.position.x - self.end_node.position.x) + \
+                    abs(neighbor.position.y - self.end_node.position.y)
+                neighbor.f = neighbor.g + neighbor.f
+
+                if add_to_open_list(self.open_node_list, neighbor):
+                    self.open_node_list.append(neighbor)
+
+        # No path was found
+        return None
+
+    def generate_node(self, pos, parent=None):
+        if self.visualizer is None:
+            return VisualizedAStarNode(pos, parent)
+        return AStarNode(pos, parent)
 
 
 def add_to_open_list(open_node_list, neighbor_node):
@@ -155,13 +246,19 @@ def add_to_open_list(open_node_list, neighbor_node):
 
 def main():
 
-    width  = 800
+    width = 800
     height = 600
     matrix = [[0 for x in range(width)] for y in range(height)]
 
-    print(a_star_search(matrix, Position(6,6), Position(20,20)))
+    visualizer = Visualizer()
+    a_star_search = AStarSearch(node_matrix=matrix, start=Position(
+        6, 6), end=Position(20, 20), visualizer=visualizer)
 
-    return
+    while not a_star_search.done:
+        a_star_search.step_a_star_search()
+
+    print(a_star_search.result_path)
+
 
 if __name__ == '__main__':
     main()
