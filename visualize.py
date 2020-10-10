@@ -4,9 +4,6 @@ SCREEN_HEIGHT = 30
 SCREEN_WIDTH = 30
 BLOCK_SIZE = 20
 
-# Colors
-
-
 class Colors:
     red = (255, 0, 0)
     green = (0, 255, 0)
@@ -112,7 +109,6 @@ class Visualizer:
 
     def update(self):
         pygame.display.update()
-        # self.clock.tick(self.clock_speed)
 
     def draw_rect(self, x, y, color, filled=False):
         rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
@@ -122,22 +118,13 @@ class Visualizer:
     def draw_grid(self):
         for x in range(SCREEN_WIDTH):
             for y in range(SCREEN_HEIGHT):
-                # rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
-                #            BLOCK_SIZE, BLOCK_SIZE)
                 self.draw_rect(x, y, Colors.white)
         self.update()
 
     def handle_play_event(self, evt):
-        # If the user attempts to close the game window
+        # If the user attempts to close the window
         if evt.type == pygame.QUIT:
             exit(0)
-
-        # # If the user pressed a key
-        # if evt.type == pygame.KEYDOWN and not self.is_direction_changed:
-        #     if evt.key == pygame.K_LEFT and self.direction != pygame.K_RIGHT:
-        #         self.direction = pygame.K_LEFT
-        #         self.is_direction_changed = True
-        #         self.location_modify = Location(-SNAKE_BLOCK_SIZE, 0)
 
     def draw_buffered_nodes(self):
         for node in self.search_algo.nodes:

@@ -8,7 +8,7 @@ def main():
 
     
     a_star_search = AStarSearch(node_matrix=matrix, start=Position(
-        10, 10), end=Position(15, 15))
+        10, 10), end=Position(23, 16))
 
     visualizer = Visualizer(search_algo=a_star_search, clock_speed=30)
 

@@ -82,7 +82,6 @@ class AStarSearch(SearchAlgo):
         super().__init__()
 
         self.node_matrix = node_matrix
-        # self.visualizer = visualizer
 
         # Create lists for open and closed nodes
         self.open_node_list = []
@@ -92,8 +91,6 @@ class AStarSearch(SearchAlgo):
         self.start_node = self.generate_node(start)
         self.end_node = self.generate_node(end)
 
-        # if self.visualizer:
-        #     self.init_start_end_nodes()
         self.init_start_end_nodes()
 
         # Add the start node
@@ -106,21 +103,6 @@ class AStarSearch(SearchAlgo):
         self.end_node.color = Colors.green
         self.add_node(self.start_node)
         self.add_node(self.end_node)
-        # self.visualizer.draw_rect(
-        #     self.start_node.position.x, self.start_node.position.y, Colors.green, filled=True)
-        # self.visualizer.draw_rect(
-        #     self.end_node.position.x, self.end_node.position.y, Colors.green, filled=True)
-        # self.visualizer.update()
-
-    # def update_visualizer(self):
-    #     if self.visualizer:
-    #         for node in self.closed:
-    #             self.visualizer.draw_rect(
-    #                 node.position.x, node.position.y, Colors.red)
-    #         for node in self.open_node_list:
-    #             self.visualizer.draw_rect(
-    #                 node.position.x, node.position.y, Colors.green)
-    #         self.visualizer.update()
 
     def update_node_closed(self, curr_node):
         self.closed.append(curr_node)
@@ -136,32 +118,23 @@ class AStarSearch(SearchAlgo):
         self.open_node_list.append(curr_node)
         curr_node.color = Colors.blue
         self.add_node(curr_node)
-        # if self.visualizer:
-        #     curr_node.color = Colors.green
-        #     self.update_visualizer()
-
-    # def draw_path(self):
-    #     for pos in self.result_path:
-    #         self.visualizer.draw_rect(pos.x, pos.y, Colors.blue, filled=True)
-    #         self.visualizer.update()
-    #         time.sleep(0.05)
 
     def finalize(self):
         print("Finalizing A* Search")
         for pos in self.result_path:
             node = self.generate_node(pos)
             node.color = Colors.dark_green
-            print(node)
             self.add_node(node)
 
     def step_algo(self):
         
         if self.done:
             return
-
+        
         if len(self.open_node_list) > 0:
             # Sort the open node list to get the cheapest node
             self.open_node_list.sort()
+
 
             curr_node = self.open_node_list.pop(0)
             self.update_node_closed(curr_node)
@@ -194,13 +167,10 @@ class AStarSearch(SearchAlgo):
                     abs(neighbor.position.y - self.start_node.position.y)
                 neighbor.h = abs(neighbor.position.x - self.end_node.position.x) + \
                     abs(neighbor.position.y - self.end_node.position.y)
-                neighbor.f = neighbor.g + neighbor.f
+                neighbor.f = neighbor.g + neighbor.h
 
                 if add_to_open_list(self.open_node_list, neighbor):
                     self.update_node_open(neighbor)
-
-    def perform_a_star_search(self):
-        pass
 
     def generate_node(self, pos, parent=None):
         return AStarNode(pos, parent)
@@ -214,37 +184,12 @@ def add_to_open_list(open_node_list, neighbor_node):
     :return: bool
     """
     for node in open_node_list:
-        if neighbor_node == node and neighbor_node.f >= node.f:
+        if neighbor_node == node and neighbor_node.f <= node.f:
             return False
     return True
 
-
-# def executeVisualizedAStarSearch():
-
-#     matrix = [[0 for x in range(SCREEN_WIDTH)] for y in range(SCREEN_HEIGHT)]
-
-#     visualizer = Visualizer()
-
-#     visualizer.draw_grid()
-#     visualizer.update()
-
-#     a_star_search = AStarSearch(node_matrix=matrix, start=Position(
-#         40, 40), end=Position(50, 50), visualizer=visualizer)
-
-#     while not a_star_search.done:
-#         a_star_search.step_a_star_search()
-
-#     print(a_star_search.result_path)
-#     a_star_search.draw_path()
-
-#     # while(True):
-#     #     pass
-
-
 def main():
     pass
-    # executeVisualizedAStarSearch()
-
 
 if __name__ == '__main__':
     main()
