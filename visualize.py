@@ -1,17 +1,20 @@
 import pygame
 
-SCREEN_HEIGHT = 600
-SCREEN_WIDTH  = 800
-BLOCK_SIZE    = 10
+SCREEN_HEIGHT = 30
+SCREEN_WIDTH = 30
+BLOCK_SIZE = 20
 
 # Colors
+
+
 class Colors:
-    red        = (255,0,0)
-    green      = (0,255,0)
-    dark_green = (0,200,0)
-    blue       = (0,0,255)
-    white      = (255,255,255)
-    black      = (0,0,0)
+    red = (255, 0, 0)
+    green = (0, 255, 0)
+    dark_green = (0, 200, 0)
+    blue = (0, 0, 255)
+    white = (255, 255, 255)
+    black = (0, 0, 0)
+
 
 class Position:
 
@@ -36,31 +39,130 @@ class Position:
     def __repr__(self):
         return "(" + str(self.x) + ", " + str(self.y) + ")"
 
+
+class SnapshotNode:
+    def __init__(self, pos):
+        self.__position = pos
+        self.__color = Colors.black
+
+    @property
+    def color(self):
+        return self.__color
+
+    @property
+    def position(self):
+        return self.__position
+
+    @color.setter
+    def color(self, color):
+        self.__color = color
+
+    @position.setter
+    def position(self, position):
+        self.__position = position
+
+    def __str(self):
+        return "Node: " + str(self.position)
+
+    def __repr__(self):
+        return "Node: " + str(self.position)
+
+
+class SearchAlgo:
+
+    def __init__(self):
+        self.__nodes = []
+        self.done = False
+
+    @property
+    def nodes(self):
+        return self.__nodes
+
+    @nodes.setter
+    def nodes(self, nodes):
+        self.__nodes = nodes
+
+    def add_node(self, node):
+        self.__nodes.append(node)
+
+    def flush_nodes(self):
+        self.__nodes = []
+
+    def step_algo(self):
+        pass
+
+    def finalize(self):
+        pass
+
 pygame.init()
 
-# self.clock.tick(self.snake_speed)
 
 class Visualizer:
 
-    def __init__(self, clock_speed=30):
+    def __init__(self, search_algo=None, clock_speed=30):
         self.clock = pygame.time.Clock()
         self.clock_speed = clock_speed
-        self.disp = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.disp = pygame.display.set_mode(
+            (SCREEN_HEIGHT * BLOCK_SIZE, SCREEN_WIDTH * BLOCK_SIZE))
         pygame.display.update()
         pygame.display.set_caption("Path Find Visualization")
+        self.search_algo = search_algo
 
-    def step(self, matrix):
-        for i in matrix:
-            for j in matrix[i]:
-                if matrix[i][j]:
-                    self.handle_pixel(matrix[i][j])
-        self.clock.tick(self.clock_speed)
+        self.update()
+
+    def update(self):
+        pygame.display.update()
+        # self.clock.tick(self.clock_speed)
+
+    def draw_rect(self, x, y, color, filled=False):
+        rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
+                           BLOCK_SIZE, BLOCK_SIZE)
+        pygame.draw.rect(self.disp, color, rect, 0 if filled else 1)
 
     def draw_grid(self):
         for x in range(SCREEN_WIDTH):
             for y in range(SCREEN_HEIGHT):
-                rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
-                                   BLOCK_SIZE, BLOCK_SIZE)
-                pygame.draw.rect(self.disp, Colors.white, rect, 1)
+                # rect = pygame.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE,
+                #            BLOCK_SIZE, BLOCK_SIZE)
+                self.draw_rect(x, y, Colors.white)
+        self.update()
 
+    def handle_play_event(self, evt):
+        # If the user attempts to close the game window
+        if evt.type == pygame.QUIT:
+            exit(0)
 
+        # # If the user pressed a key
+        # if evt.type == pygame.KEYDOWN and not self.is_direction_changed:
+        #     if evt.key == pygame.K_LEFT and self.direction != pygame.K_RIGHT:
+        #         self.direction = pygame.K_LEFT
+        #         self.is_direction_changed = True
+        #         self.location_modify = Location(-SNAKE_BLOCK_SIZE, 0)
+
+    def draw_buffered_nodes(self):
+        for node in self.search_algo.nodes:
+            self.draw_rect(
+                node.position.x, node.position.y, node.color, filled=True)
+        self.search_algo.flush_nodes()
+
+    def run_algo(self):
+        print("Running algo")
+        while not self.search_algo.done:
+
+            self.search_algo.step_algo()
+            self.draw_buffered_nodes()
+            
+            for evt in pygame.event.get():
+                self.handle_play_event(evt)
+
+            self.update()
+            self.clock.tick(self.clock_speed)
+        
+        self.search_algo.finalize()
+        self.draw_buffered_nodes()
+        self.update()
+
+        while True:
+            for evt in pygame.event.get():
+                self.handle_play_event(evt)
+            self.clock.tick(self.clock_speed)
