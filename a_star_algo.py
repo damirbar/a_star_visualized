@@ -78,9 +78,10 @@ class AStarNode(SnapshotNode):
 
 class AStarSearch(SearchAlgo):
 
-    def __init__(self, node_matrix, start, end):
+    def __init__(self, node_matrix, start, end, diagonal_allowed=False):
         super().__init__()
 
+        self.diagonal_allowed = diagonal_allowed
         self.node_matrix = node_matrix
 
         # Create lists for open and closed nodes
@@ -126,6 +127,15 @@ class AStarSearch(SearchAlgo):
             node.color = Colors.dark_green
             self.add_node(node)
 
+    def get_node_neighbours(self, x, y):
+        if self.diagonal_allowed:
+            return [Position(x - 1, y), Position(x + 1, y),
+                    Position(x, y - 1), Position(x, y + 1),
+                    Position(x - 1, y - 1), Position(x - 1, y + 1),
+                    Position(x + 1, y - 1), Position(x + 1, y + 1)]
+
+        return [Position(x-1, y), Position(x+1, y),
+                Position(x, y-1), Position(x, y+1)]
     def step_algo(self):
         
         if self.done:
@@ -151,8 +161,7 @@ class AStarSearch(SearchAlgo):
 
             x, y = curr_node.position.x, curr_node.position.y
 
-            neighbors = [Position(x-1, y), Position(x+1, y),
-                         Position(x, y-1), Position(x, y+1)]
+            neighbors = self.get_node_neighbours(x, y)
 
             for position in neighbors:
 

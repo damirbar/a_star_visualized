@@ -37,6 +37,9 @@ class Position:
     def __repr__(self):
         return "(" + str(self.x) + ", " + str(self.y) + ")"
 
+    def __hash__(self):
+        return hash(str(self.__x) + ":" + str(self.__y))
+
 
 class SnapshotNode:
     def __init__(self, pos):
@@ -145,6 +148,8 @@ class Visualizer:
         chosen_positions = []
         while len(chosen_positions) < 2:
             for evt in pygame.event.get():
+                if evt.type == pygame.QUIT:
+                    exit(0)
                 if evt.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
                     print(f"Clicked on {pos}")
@@ -156,6 +161,37 @@ class Visualizer:
                     self.update()
         return chosen_positions
 
+    def user_choose_obstacle(self):
+        chosen_positions = set([])
+        done_choosing_obstacle = False
+        mouse_down = False
+        while not done_choosing_obstacle:
+            for evt in pygame.event.get():
+                if evt.type == pygame.QUIT:
+                    exit(0)
+                if evt.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_down = True
+                    pos = pygame.mouse.get_pos()
+                    x = (pos[0] // BLOCK_SIZE)
+                    y = (pos[1] // BLOCK_SIZE)
+                    chosen_positions.add(Position(x,y))
+                    self.draw_rect(
+                        x, y, Colors.dark_red, filled=True)
+                    self.update()
+
+                if evt.type == pygame.MOUSEMOTION and mouse_down:
+                    pos = pygame.mouse.get_pos()
+                    x = (pos[0] // BLOCK_SIZE)
+                    y = (pos[1] // BLOCK_SIZE)
+                    chosen_positions.add(Position(x, y))
+                    self.draw_rect(
+                        x, y, Colors.dark_red, filled=True)
+                    self.update()
+
+                if evt.type == pygame.MOUSEBUTTONUP:
+                    done_choosing_obstacle = True
+                    break
+        return chosen_positions
 
     def run_algo(self):
         print("Running algo")
