@@ -104,11 +104,11 @@ class AStarSearch(SearchAlgo):
         self.add_node(self.start_node)
         self.add_node(self.end_node)
 
-    def update_node_closed(self, curr_node):
+    def update_node_closed(self, curr_node, color=Colors.red):
         self.closed.append(curr_node)
 
         if curr_node != self.start_node:
-            curr_node.color = Colors.red
+            curr_node.color = color
             self.add_node(curr_node)
         # if self.visualizer:
         #     curr_node.color = Colors.red

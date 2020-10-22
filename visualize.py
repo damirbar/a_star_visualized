@@ -6,6 +6,7 @@ BLOCK_SIZE = 20
 
 class Colors:
     red = (255, 0, 0)
+    dark_red = (150, 0, 0)
     green = (0, 255, 0)
     dark_green = (0, 200, 0)
     blue = (0, 0, 255)
@@ -103,9 +104,17 @@ class Visualizer:
             (SCREEN_HEIGHT * BLOCK_SIZE, SCREEN_WIDTH * BLOCK_SIZE))
         pygame.display.update()
         pygame.display.set_caption("Path Find Visualization")
-        self.search_algo = search_algo
+        self.__search_algo = search_algo
 
         self.update()
+
+    @property
+    def search_algo(self):
+        return self.__search_algo
+
+    @search_algo.setter
+    def search_algo(self, search_algo):
+        self.__search_algo = search_algo
 
     def update(self):
         pygame.display.update()
@@ -131,6 +140,22 @@ class Visualizer:
             self.draw_rect(
                 node.position.x, node.position.y, node.color, filled=True)
         self.search_algo.flush_nodes()
+
+    def user_choose_start_end(self):
+        chosen_positions = []
+        while len(chosen_positions) < 2:
+            for evt in pygame.event.get():
+                if evt.type == pygame.MOUSEBUTTONUP:
+                    pos = pygame.mouse.get_pos()
+                    print(f"Clicked on {pos}")
+                    x = (pos[0] // BLOCK_SIZE)
+                    y = (pos[1] // BLOCK_SIZE)
+                    chosen_positions.append(Position(x,y))
+                    self.draw_rect(
+                        x, y, Colors.white, filled=True)
+                    self.update()
+        return chosen_positions
+
 
     def run_algo(self):
         print("Running algo")
